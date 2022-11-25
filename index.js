@@ -29,6 +29,7 @@ async function run() {
     try {
         // await client.connect();
         const categoryCollection = client.db("resellStore").collection("categories");
+        const userCollection = client.db("resellStore").collection("user");
 
 
         // get all categories from category collection
@@ -37,6 +38,16 @@ async function run() {
             const categories = await cursor.toArray();
             // console.log(categories)
             res.send(categories)
+        })
+
+
+        // upsert user information to user collection
+        app.post('/user', async (req, res) => {
+            const user = req.body;
+            const result = await userCollection.updateOne
+                ({ email: user.email }, { $set: user }, { upsert: true })
+
+            res.json(result)
         })
 
 
