@@ -78,6 +78,14 @@ async function run() {
             res.send(products)
         })
 
+        // get all the products which have isAdvertised = "yes"
+        app.get('/advertisedProducts', async (req, res) => {
+            const cursor = productCollection.find({ isAdvertise: "yes" });
+            const products = await cursor.toArray();
+            // console.log(products)
+            res.send(products.reverse())
+        })
+
 
 
 
