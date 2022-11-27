@@ -30,6 +30,7 @@ async function run() {
         // await client.connect();
         const categoryCollection = client.db("resellStore").collection("categories");
         const userCollection = client.db("resellStore").collection("user");
+        const productCollection = client.db("resellStore").collection("products");
 
 
         // get all categories from category collection
@@ -49,6 +50,35 @@ async function run() {
 
             res.json(result)
         })
+
+        // get user role from userCollection based on email query
+        app.get('/user', async (req, res) => {
+            const email = req.query.email;
+            const user = await userCollection.findOne({
+                email: email
+            })
+            res.send(user)
+        })
+
+        // post new product to product collection
+        app.post('/product', async (req, res) => {
+            const product = req.body;
+            const result = await productCollection.insertOne(product)
+            // console.log(result)
+            res.json(result)
+        })
+
+
+
+        // get all products from product collection
+        app.get('/products', async (req, res) => {
+            const cursor = productCollection.find({});
+            const products = await cursor.toArray();
+            // console.log(products)
+            res.send(products)
+        })
+
+
 
 
 
