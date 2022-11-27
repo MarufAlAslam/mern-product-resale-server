@@ -1,5 +1,5 @@
 const express = require('express')
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors')
 
 require('dotenv').config()
@@ -85,6 +85,26 @@ async function run() {
             // console.log(products)
             res.send(products.reverse())
         })
+
+        // get lastly added 3 products from product collection
+        app.get('/recents', async (req, res) => {
+            const cursor = productCollection.find({}).sort({ _id: -1 }).limit(3);
+            const products = await cursor.toArray();
+            // console.log(products)
+            res.send(products)
+        })
+
+        // get the category title based on id params
+        app.get('/category/:id', async (req, res) => {
+            const id = req.params.id;
+            const category = await categoryCollection.findOne({
+                _id: ObjectId(id)
+            })
+            res.send(category)
+        })
+
+
+
 
 
 
