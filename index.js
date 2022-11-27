@@ -31,6 +31,7 @@ async function run() {
         const categoryCollection = client.db("resellStore").collection("categories");
         const userCollection = client.db("resellStore").collection("user");
         const productCollection = client.db("resellStore").collection("products");
+        const bookingCollection = client.db("resellStore").collection("booking");
 
 
         // get all categories from category collection
@@ -68,6 +69,13 @@ async function run() {
             res.json(result)
         })
 
+        // get product by id
+        app.get('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const product = await productCollection.findOne({ _id: ObjectId(id) })
+            res.send(product)
+        })
+
 
 
         // get all products from product collection
@@ -101,6 +109,34 @@ async function run() {
                 _id: ObjectId(id)
             })
             res.send(category)
+        })
+
+
+        // filter products by seller email and skip the products which have the same email as the query
+        app.get('/productsbyseller', async (req, res) => {
+            const email = req.query.email;
+            const cursor = productCollection.find({ selleremail: { $ne: email } });
+            const products = await cursor.toArray();
+            // console.log(products)
+            res.send(products)
+        })
+
+        // get products for a specific seller by seller email
+        app.get('/productsforseller', async (req, res) => {
+            const email = req.query.email;
+            const cursor = productCollection.find({ selleremail: email });
+            const products = await cursor.toArray();
+            // console.log(products)
+            res.send(products)
+        })
+
+
+        // post booking data to database
+        app.post('/booking', async (req, res) => {
+            const booking = req.body;
+            const result = await bookingCollection.insertOne(booking)
+            // console.log(result)
+            res.json(result)
         })
 
 
