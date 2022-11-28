@@ -61,6 +61,18 @@ async function run() {
             res.send(user)
         })
 
+        // patch user to update user role and email on social login
+        app.patch('/user', async (req, res) => {
+            const user = req.body;
+            const result = await userCollection.updateOne(
+                { email: user.email },
+                { $set: user },
+                { upsert: true }
+            )
+            res.json(result)
+
+        })
+
         // post new product to product collection
         app.post('/product', async (req, res) => {
             const product = req.body;
@@ -186,6 +198,48 @@ async function run() {
             // console.log(bookings)
             res.send(bookings)
         })
+
+
+        // get all the users
+        app.get('/users', async (req, res) => {
+            const cursor = userCollection.find({});
+            const users = await cursor.toArray();
+            // console.log(users)
+            res.send(users)
+        })
+
+        // delete user by email query
+        app.delete('/users', async (req, res) => {
+            const email = req.query.email;
+            const result = await userCollection.deleteOne
+                ({ email: email })
+            res.json(result)
+        })
+
+        // update user role by email query
+        app.patch('/users', async (req, res) => {
+            const email = req.query.email;
+            const user = req.body;
+            const result = await userCollection.updateOne(
+                { email: email },
+                { $set: user },
+                { upsert: true }
+            )
+            res.json(result)
+        })
+
+        // verify seller by email query
+        app.patch('/verify', async (req, res) => {
+            const email = req.query.email;
+            const user = req.body;
+            const result = await userCollection.updateOne(
+                { email: email },
+                { $set: user },
+                { upsert: true }
+            )
+            res.json(result)
+        })
+
 
 
 
