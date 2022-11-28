@@ -130,6 +130,44 @@ async function run() {
             res.send(products)
         })
 
+        // update product status based on id params using patch method
+        app.patch('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const product = req.body;
+            const result = await productCollection.updateOne(
+                { _id: ObjectId(id) },
+                { $set: product },
+                { upsert: true }
+            )
+            res.json(result)
+        })
+
+        // update isAdvertise status based on id params using patch method
+        app.patch('/advertise/:id', async (req, res) => {
+            const id = req.params.id;
+            const product = req.body;
+            const result = await productCollection.updateOne(
+                { _id: ObjectId(id) },
+                { $set: product },
+                { upsert: true }
+            )
+            res.json(result)
+        })
+
+        // update price based on id params using patch method
+        app.patch('/updateprice/:id', async (req, res) => {
+            const id = req.params.id;
+            const product = req.body;
+            const result = await productCollection.updateOne(
+                { _id: ObjectId(id) },
+                { $set: product },
+                { upsert: true }
+            )
+            res.json(result)
+        })
+
+
+
 
         // post booking data to database
         app.post('/booking', async (req, res) => {
