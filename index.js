@@ -5,6 +5,8 @@ const jwt = require('jsonwebtoken')
 
 require('dotenv').config()
 
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+
 
 const app = express()
 const port = process.env.port || 5000
@@ -49,6 +51,27 @@ async function run() {
         const userCollection = client.db("resellStore").collection("user");
         const productCollection = client.db("resellStore").collection("products");
         const bookingCollection = client.db("resellStore").collection("booking");
+
+
+
+        app.post('/create-payment-intent', async (req, res) => {
+            const booking = req.body
+            const price = parseInt(booking.price)
+            const amount = price * 100
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                "payment_method_types": [
+                    "card"
+                ],
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+
+        })
+
+
 
         app.post('/jwt', (req, res) => {
             const user = req.body
@@ -281,6 +304,34 @@ async function run() {
             const bookings = await cursor.toArray();
             // console.log(bookings)
             res.send(bookings)
+        })
+
+
+        // get bookings by id
+        app.get('/booking/:id', async (req, res) => {
+            const id = req.params.id;
+            const booking = await bookingCollection.findOne({
+                _id: ObjectId(id)
+            })
+            res.send(booking)
+        })
+
+        // update booking isPaid status based on id params using patch method
+        app.patch('/booking/:id', async (req, res) => {
+            const id = req.params.id;
+            const booking = req.body;
+            const result = await bookingCollection.updateOne(
+                {
+                    _id: ObjectId(id)
+                },
+                {
+                    $set: booking
+                },
+                {
+                    upsert: true
+                }
+            )
+            res.json(result)
         })
 
 
