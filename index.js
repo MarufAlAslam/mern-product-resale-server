@@ -178,6 +178,16 @@ async function run() {
         })
 
 
+        // get bookings based on email query and match the email with selleremail
+        app.get('/bookings', async (req, res) => {
+            const email = req.query.email;
+            const cursor = bookingCollection.find({ selleremail: email });
+            const bookings = await cursor.toArray();
+            // console.log(bookings)
+            res.send(bookings)
+        })
+
+
 
 
 
