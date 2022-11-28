@@ -1,6 +1,7 @@
 const express = require('express')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors')
+const jwt = require('jsonwebtoken')
 
 require('dotenv').config()
 
@@ -25,6 +26,22 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 // console.log(uri)
 
+// jwt verify
+const verifyJwt = (req, res, next) => {
+    const authHeader = req.headers.authorization
+    if (!authHeader) {
+        return res.status(401).send('Unauthorized request')
+    }
+    const token = authHeader.split(' ')[1]
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.status(401).send('Unauthorized request')
+        }
+        req.decoded = decoded
+        next()
+    })
+}
+
 async function run() {
     try {
         // await client.connect();
@@ -32,6 +49,13 @@ async function run() {
         const userCollection = client.db("resellStore").collection("user");
         const productCollection = client.db("resellStore").collection("products");
         const bookingCollection = client.db("resellStore").collection("booking");
+
+        app.post('/jwt', (req, res) => {
+            const user = req.body
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET)
+            res.send({ token })
+            console.log(user)
+        })
 
 
         // get all categories from category collection
@@ -124,6 +148,8 @@ async function run() {
         })
 
 
+        // need jwt
+
         // filter products by seller email and skip the products which have the same email as the query
         app.get('/productsbyseller', async (req, res) => {
             const email = req.query.email;
@@ -133,8 +159,18 @@ async function run() {
             res.send(products)
         })
 
+        // need jwt
+
         // get products for a specific seller by seller email
-        app.get('/productsforseller', async (req, res) => {
+        app.get('/productsforseller', verifyJwt, async (req, res) => {
+            const decoded = req.decoded;
+            console.log("products for seller", decoded)
+
+            if (decoded.email !== req.query.email) {
+                return res.status(401).send('Unauthorized request')
+            }
+
+            console.log(req.headers.authorization)
             const email = req.query.email;
             const cursor = productCollection.find({ selleremail: email });
             const products = await cursor.toArray();
@@ -213,8 +249,16 @@ async function run() {
         })
 
 
+        // need jwt
+
         // get bookings based on email query and match the email with selleremail
-        app.get('/bookings', async (req, res) => {
+        app.get('/bookings', verifyJwt, async (req, res) => {
+            const decoded = req.decoded;
+            console.log("products for seller", decoded)
+
+            if (decoded.email !== req.query.email) {
+                return res.status(401).send('Unauthorized request')
+            }
             const email = req.query.email;
             const cursor = bookingCollection.find({ selleremail: email });
             const bookings = await cursor.toArray();
@@ -222,8 +266,16 @@ async function run() {
             res.send(bookings)
         })
 
+        // need jwt
         // get bookings based on email query and match the email with buyeremail
-        app.get('/buyerbookings', async (req, res) => {
+        app.get('/buyerbookings', verifyJwt, async (req, res) => {
+            const decoded = req.decoded;
+            console.log("products for seller", decoded)
+
+            if (decoded.email !== req.query.email) {
+                return res.status(401).send('Unauthorized request')
+            }
+
             const email = req.query.email;
             const cursor = bookingCollection.find({ email: email });
             const bookings = await cursor.toArray();
