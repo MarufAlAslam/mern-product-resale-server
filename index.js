@@ -154,6 +154,29 @@ async function run() {
             res.json(result)
         })
 
+
+
+        // add reported: true to product collection based on id params
+        app.patch('/report/:id', async (req, res) => {
+            const id = req.params.id;
+            const product = req.body;
+            const result = await productCollection.updateOne(
+                { _id: ObjectId(id) },
+                { $set: product },
+                { upsert: true }
+            )
+            res.json(result)
+        })
+
+        // delete product based on id params
+        app.delete('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const result = await productCollection.deleteOne({ _id: ObjectId(id) })
+            res.json(result)
+        })
+
+
+
         // update isAdvertise status based on id params using patch method
         app.patch('/advertise/:id', async (req, res) => {
             const id = req.params.id;
@@ -194,6 +217,15 @@ async function run() {
         app.get('/bookings', async (req, res) => {
             const email = req.query.email;
             const cursor = bookingCollection.find({ selleremail: email });
+            const bookings = await cursor.toArray();
+            // console.log(bookings)
+            res.send(bookings)
+        })
+
+        // get bookings based on email query and match the email with buyeremail
+        app.get('/buyerbookings', async (req, res) => {
+            const email = req.query.email;
+            const cursor = bookingCollection.find({ email: email });
             const bookings = await cursor.toArray();
             // console.log(bookings)
             res.send(bookings)
