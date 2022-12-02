@@ -213,6 +213,19 @@ async function run() {
             res.json(result)
         })
 
+        // change availability of a product based on id params once it is paid
+        app.patch('/availability/:id', async (req, res) => {
+            const id = req.params.id;
+            const product = req.body;
+            const result = await productCollection.updateOne(
+                { _id: ObjectId(id) },
+                { $set: product },
+                { upsert: true }
+            )
+            res.json(result)
+        })
+
+
 
 
         // add reported: true to product collection based on id params
